@@ -18,4 +18,12 @@ public class StrUtil {
         }
         return s.substring(start, end);
     }
+
+    public static boolean isSpace(char ci) {
+        return (' ' == ci);
+    }
+
+    public static boolean isDigit(char ci) {
+        return (ci >= '0' && ci <= '9');
+    }
 }

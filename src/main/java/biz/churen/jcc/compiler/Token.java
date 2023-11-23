@@ -9,12 +9,14 @@ public class Token {
     public Token next;
     public Long val; // If kind is TK_NUM, its value
     String str;      // Token string
+    public Long loc; // Location in the input
 
     public Token() {
     }
 
-    public Token(TokenKind kind) {
+    public Token(TokenKind kind, long loc) {
         this.kind = kind;
+        this.loc = loc;
     }
 
     public Token(TokenKind kind, Token next, Long val, String str) {

@@ -55,7 +55,7 @@ public class JCC {
 
             // Punctuator
             if (ci == '+' || ci == '-') {
-                cur.next = new Token(TK_RESERVED);
+                cur.next = new Token(TK_RESERVED, i);
                 cur = cur.next;
                 cur.str = String.valueOf(ci);
                 i++;
@@ -64,7 +64,7 @@ public class JCC {
 
             // Integer literal
             if (StrUtil.isDigit(ci)) {
-                cur.next = new Token(TK_NUM);
+                cur.next = new Token(TK_NUM, i);
                 cur = cur.next;
                 String numStr = StrUtil.firstNumber(p, i);
                 i += numStr.length();
@@ -72,10 +72,10 @@ public class JCC {
                 continue;
             }
 
-            error("invalid token");
+            errorAt(String.valueOf(ci), String.valueOf(i), "invalid token", (Object) null);
         }
 
-        cur.next = new Token(TK_EOF);
+        cur.next = new Token(TK_EOF, i);
         return head.next;
     }
 
@@ -91,7 +91,7 @@ public class JCC {
     // Ensure that the current token is `op`.
     public void expect(char op) {
         if (token.kind != TK_RESERVED || (token.str).charAt(0) != op) {
-            error("expected '%s'", op);
+            errorAt(token,"expected '%s'", op);
         }
         token = token.next;
     }
@@ -99,7 +99,7 @@ public class JCC {
     // Ensure that the current token is TK_NUM.
     long expectNumber() {
         if (token.kind != TK_NUM) {
-            error("expected a number");
+            errorAt(token,"expected a number");
         }
         long val = token.val;
         token = token.next;
@@ -114,6 +114,20 @@ public class JCC {
     public static void error(String format, Object... args) {
         String err = String.format(format, args);
         System.err.println(err);
+        throw new RuntimeException(err);
+    }
+
+    // Reports an error and exit.
+    public static void errorAt(Token token, String format, Object... args) {
+        errorAt(token.str, String.valueOf(token.loc), format, args);
+    }
+
+    // Reports an error and exit.
+    public static void errorAt(String tokenStr, String loc, String format, Object... args) {
+        String err = String.format(format, args);
+        System.err.println(err);
+        String locStr = String.format("^^^ near by %s, location: %s", tokenStr, loc);
+        System.err.println(locStr);
         throw new RuntimeException(err);
     }
 }

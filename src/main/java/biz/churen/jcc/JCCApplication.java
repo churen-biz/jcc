@@ -8,14 +8,18 @@ import biz.churen.jcc.compiler.JCC;
  */
 public class JCCApplication {
     public static void main(String[] args) {
-        int argsSize = args.length;
-        if (argsSize != 1) {
-            System.err.println("JCCApplication: invalid number of arguments");
-            return;
+        try {
+            int argsSize = args.length;
+            if (argsSize != 1) {
+                System.err.println("JCCApplication: invalid number of arguments");
+                return;
+            }
+            String input = args[0];
+            JCC jcc = new JCC();
+            String output = jcc.compile(input);
+            System.out.println(output);
+        } catch (Throwable th) {
+            System.err.println("JCCApplication exit 1 !!!");
         }
-        String input = args[0];
-        JCC jcc = new JCC();
-        String output = jcc.compile(input);
-        System.out.println(output);
     }
 }

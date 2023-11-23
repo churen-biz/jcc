@@ -9,5 +9,6 @@ public enum NodeKind {
     ND_SUB, // -
     ND_MUL, // *
     ND_DIV, // /
+    ND_NEG, // unary -
     ND_NUM, // Integer
 }

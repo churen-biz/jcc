@@ -92,15 +92,15 @@ public class JCC {
         }
     }
 
-    // mul = primary ("*" primary | "/" primary)*
+    // mul = unary ("*" unary | "/" unary)*
     public Node mul() {
-        Node node = primary();
+        Node node = unary();
 
         for (;;) {
             if (consume('*'))
-                node = new Node(ND_MUL, node, primary());
+                node = new Node(ND_MUL, node, unary());
             else if (consume('/'))
-                node = new Node(ND_DIV, node, primary());
+                node = new Node(ND_DIV, node, unary());
             else
                 return node;
         }
@@ -114,6 +114,18 @@ public class JCC {
             return node;
         }
         return new Node(ND_NUM, expectNumber());
+    }
+
+    // unary = ("+" | "-")? unary
+    //       | primary
+    public Node unary() {
+        if (consume('+')) {
+            return unary();
+        }
+        if (consume('-')) {
+            return new Node(ND_SUB, new Node(ND_NUM, 0L), unary());
+        }
+        return primary();
     }
 
     // Tokenize `input` and returns new tokens.

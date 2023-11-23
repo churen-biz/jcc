@@ -17,8 +17,8 @@ import biz.churen.jcc.utils.StrUtil;
  */
 @SuppressWarnings({"StringBufferReplaceableByString", "FieldCanBeLocal"})
 public class JCC {
-    private Token token = null;
-    private Node node = null;
+    public Token token = null;
+    public Node node = null;
 
     public String compile(String input) {
         // Tokenize
@@ -82,9 +82,9 @@ public class JCC {
         Node node = mul();
 
         for (;;) {
-            if (consume('+')) {
+            if (consume("+")) {
                 node = new Node(ND_ADD, node, mul());
-            } else if (consume('-')) {
+            } else if (consume("-")) {
                 node = new Node(ND_SUB, node, mul());
             } else {
                 return node;
@@ -97,9 +97,9 @@ public class JCC {
         Node node = unary();
 
         for (;;) {
-            if (consume('*'))
+            if (consume("*"))
                 node = new Node(ND_MUL, node, unary());
-            else if (consume('/'))
+            else if (consume("/"))
                 node = new Node(ND_DIV, node, unary());
             else
                 return node;
@@ -108,9 +108,9 @@ public class JCC {
 
     // primary = "(" expr ")" | num
     public Node primary() {
-        if (consume('(')) {
+        if (consume("(")) {
             Node node = expr();
-            expect(')');
+            expect(")");
             return node;
         }
         return new Node(ND_NUM, expectNumber());
@@ -119,10 +119,10 @@ public class JCC {
     // unary = ("+" | "-")? unary
     //       | primary
     public Node unary() {
-        if (consume('+')) {
+        if (consume("+")) {
             return unary();
         }
-        if (consume('-')) {
+        if (consume("-")) {
             return new Node(ND_SUB, new Node(ND_NUM, 0L), unary());
         }
         return primary();
@@ -170,8 +170,8 @@ public class JCC {
     //
 
     // Consumes the current token if it matches `op`.
-    public boolean consume(char op) {
-        if (token.kind != TK_RESERVED || (token.str).charAt(0) != op) {
+    public boolean consume(String op) {
+        if (token.kind != TK_RESERVED || !op.equals(token.str)) {
             return false;
         }
         token = token.next;
@@ -179,8 +179,8 @@ public class JCC {
     }
 
     // Ensure that the current token is `op`.
-    public void expect(char op) {
-        if (token.kind != TK_RESERVED || (token.str).charAt(0) != op) {
+    public void expect(String op) {
+        if (token.kind != TK_RESERVED || !op.equals(token.str)) {
             errorAt(token,"expected '%s'", op);
         }
         token = token.next;

@@ -26,4 +26,14 @@ public class StrUtil {
     public static boolean isDigit(char ci) {
         return (ci >= '0' && ci <= '9');
     }
+
+    public static boolean isPunctuator(char c) {
+        return c == '+'
+                || c == '-'
+                || c == '*'
+                || c == '/'
+                || c == '('
+                || c == ')'
+                ;
+    }
 }

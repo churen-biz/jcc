@@ -1,5 +1,10 @@
 package biz.churen.jcc.compiler;
 
+import static biz.churen.jcc.compiler.NodeKind.ND_ADD;
+import static biz.churen.jcc.compiler.NodeKind.ND_DIV;
+import static biz.churen.jcc.compiler.NodeKind.ND_MUL;
+import static biz.churen.jcc.compiler.NodeKind.ND_NUM;
+import static biz.churen.jcc.compiler.NodeKind.ND_SUB;
 import static biz.churen.jcc.compiler.TokenKind.TK_EOF;
 import static biz.churen.jcc.compiler.TokenKind.TK_NUM;
 import static biz.churen.jcc.compiler.TokenKind.TK_RESERVED;
@@ -10,43 +15,114 @@ import biz.churen.jcc.utils.StrUtil;
  * @author lihai03
  * Created on 2023-11-22
  */
+@SuppressWarnings({"StringBufferReplaceableByString", "FieldCanBeLocal"})
 public class JCC {
     private Token token = null;
+    private Node node = null;
 
     public String compile(String input) {
+        // Tokenize
         this.token = tokenize(input);
+        // Parse
+        this.node = expr();
 
         StringBuilder sb = new StringBuilder();
+        // Print out the first half of assembly.
         sb.append(".intel_syntax noprefix").append(System.lineSeparator());
         sb.append(".global main").append(System.lineSeparator());
         sb.append("main:").append(System.lineSeparator());
 
-        // The first token must be a number
-        sb.append("  mov rax, ").append(expectNumber()).append(System.lineSeparator());
+        // Traverse the AST to emit assembly.
+        sb.append(gen(this.node));
 
-        // ... followed by either `+ <number>` or `- <number>`.
-        while (!atEOF()) {
-            if (consume('+')) {
-                sb.append("  add rax, ").append(expectNumber()).append(System.lineSeparator());
-            } else {
-                expect('-');
-                sb.append("  sub rax, ").append(expectNumber()).append(System.lineSeparator());
-            }
-        }
-
+        // A result must be at the top of the stack, so pop it
+        // to RAX to make it a program exit code.
+        sb.append("  pop rax").append(System.lineSeparator());
         sb.append("  ret").append(System.lineSeparator());
         return sb.toString();
     }
 
+    // Parse `token` and returns new Node
+    public String gen(Node node) {
+        StringBuilder sb = new StringBuilder();
+        if (null == node) { return sb.toString(); }
 
+        if (node.kind == ND_NUM) {
+            sb.append("  push ").append(node.val).append(System.lineSeparator());
+            return sb.toString();
+        }
+        sb.append(gen(node.left));
+        sb.append(gen(node.right));
 
-    // Tokenize `p` and returns new tokens.
-    public Token tokenize(String p) {
+        sb.append("  pop rdi").append(System.lineSeparator());
+        sb.append("  pop rax").append(System.lineSeparator());
+
+        switch (node.kind) {
+            case ND_ADD:
+                sb.append("  add rax, rdi").append(System.lineSeparator());
+                break;
+            case ND_SUB:
+                sb.append("  sub rax, rdi").append(System.lineSeparator());
+                break;
+            case ND_MUL:
+                sb.append("  imul rax, rdi").append(System.lineSeparator());
+                break;
+            case ND_DIV:
+                sb.append("  cqo").append(System.lineSeparator());
+                sb.append("  idiv rdi").append(System.lineSeparator());
+                break;
+        }
+        sb.append("  push rax").append(System.lineSeparator());
+        return sb.toString();
+    }
+
+    // Parse `token` and returns new Node
+    // expr = mul ("+" mul | "-" mul)*
+    public Node expr() {
+        Node node = mul();
+
+        for (;;) {
+            if (consume('+')) {
+                node = new Node(ND_ADD, node, mul());
+            } else if (consume('-')) {
+                node = new Node(ND_SUB, node, mul());
+            } else {
+                return node;
+            }
+        }
+    }
+
+    // mul = primary ("*" primary | "/" primary)*
+    public Node mul() {
+        Node node = primary();
+
+        for (;;) {
+            if (consume('*'))
+                node = new Node(ND_MUL, node, primary());
+            else if (consume('/'))
+                node = new Node(ND_DIV, node, primary());
+            else
+                return node;
+        }
+    }
+
+    // primary = "(" expr ")" | num
+    public Node primary() {
+        if (consume('(')) {
+            Node node = expr();
+            expect(')');
+            return node;
+        }
+        return new Node(ND_NUM, expectNumber());
+    }
+
+    // Tokenize `input` and returns new tokens.
+    public Token tokenize(String input) {
         Token head = new Token();
         Token cur = head;
         int i = 0;
-        while (i < p.length()) {
-            char ci = p.charAt(i);
+        while (i < input.length()) {
+            char ci = input.charAt(i);
             // Skip whitespace characters.
             if (StrUtil.isSpace(ci)) {
                 i++;
@@ -54,7 +130,7 @@ public class JCC {
             }
 
             // Punctuator
-            if (ci == '+' || ci == '-') {
+            if (StrUtil.isPunctuator(ci)) {
                 cur.next = new Token(TK_RESERVED, i);
                 cur = cur.next;
                 cur.str = String.valueOf(ci);
@@ -66,7 +142,7 @@ public class JCC {
             if (StrUtil.isDigit(ci)) {
                 cur.next = new Token(TK_NUM, i);
                 cur = cur.next;
-                String numStr = StrUtil.firstNumber(p, i);
+                String numStr = StrUtil.firstNumber(input, i);
                 i += numStr.length();
                 cur.val = Long.parseLong(numStr);
                 continue;
@@ -78,6 +154,8 @@ public class JCC {
         cur.next = new Token(TK_EOF, i);
         return head.next;
     }
+
+    //
 
     // Consumes the current token if it matches `op`.
     public boolean consume(char op) {
@@ -109,6 +187,8 @@ public class JCC {
     public boolean atEOF() {
         return TK_EOF == token.kind;
     }
+
+
 
     // Reports an error and exit.
     public static void error(String format, Object... args) {

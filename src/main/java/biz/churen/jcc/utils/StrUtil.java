@@ -36,4 +36,26 @@ public class StrUtil {
                 || c == ')'
                 ;
     }
+
+    public static int isIdentifier(String s, int start) {
+        if ((s.startsWith("==", start))
+            || (s.startsWith("!=", start))
+            || (s.startsWith(">=", start))
+            || (s.startsWith("<=", start))
+        ) {
+            return 2;
+        } else if ((s.startsWith("+", start))
+                || (s.startsWith("-", start))
+                || (s.startsWith("*", start))
+                || (s.startsWith("/", start))
+                || (s.startsWith("<", start))
+                || (s.startsWith(">", start))
+                || (s.startsWith("(", start))
+                || (s.startsWith(")", start))
+        ) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }

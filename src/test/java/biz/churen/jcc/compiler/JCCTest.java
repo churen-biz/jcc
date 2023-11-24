@@ -16,7 +16,7 @@ class JCCTest {
     void tokenize() {
         JCC jcc = new JCC();
         // tokenize
-        String input = "40+2";
+        String input = "1>0";
         Token token = jcc.tokenize(input);
         Token token0 = token;
 

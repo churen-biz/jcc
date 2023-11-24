@@ -10,5 +10,11 @@ public enum NodeKind {
     ND_MUL, // *
     ND_DIV, // /
     ND_NEG, // unary -
+    ND_EQ,  // ==
+    ND_NE,  // !=
+    ND_LT,  // <
+    ND_LE,  // <=
+    // ND_GT,  // >
+    // ND_GE,  // >=
     ND_NUM, // Integer
 }

@@ -9,7 +9,7 @@ public class JCC {
         // Tokenize
         Token token = (new Tokenize(input)).tokenize();
         // Parse
-        Node node = (new Parse(token)).expr();
+        Node node = (new Parse(token)).program();
         // To Assembly
         return (new CodeGenerator(node)).toAssembly();
     }

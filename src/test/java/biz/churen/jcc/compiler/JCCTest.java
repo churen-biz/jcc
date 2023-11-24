@@ -15,7 +15,7 @@ class JCCTest {
     @Test
     void tokenize() {
         JCC jcc = new JCC();
-        String asm = jcc.compile("1+2");
+        String asm = jcc.compile("0;");
         System.out.println(asm);
     }
 }

@@ -74,6 +74,7 @@ public class Tokenize {
                 || (s.startsWith(">", start))
                 || (s.startsWith("(", start))
                 || (s.startsWith(")", start))
+                || (s.startsWith(";", start))
         ) {
             return 1;
         } else {

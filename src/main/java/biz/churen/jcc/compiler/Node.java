@@ -6,9 +6,13 @@ package biz.churen.jcc.compiler;
  */
 public class Node {
     public NodeKind kind; // Node kind
+    public Node next;     // Next stmt
     public Node left;     // Left-hand side
     public Node right;     // Right-hand side
-    public long val;      // Used if kind == ND_NUM
+    public Long val;      // Used if kind == ND_NUM
+
+    public Node() {
+    }
 
     public Node(NodeKind kind, long val) {
         this.kind = kind;

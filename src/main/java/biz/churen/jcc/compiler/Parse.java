@@ -17,6 +17,8 @@ import static biz.churen.jcc.compiler.TokenKind.TK_RESERVED;
  *
  *
  * BNF:
+ * program = stmt*
+ * stmt = expr ";"
  * expr = equality
  * equality = relational ("==" relational | "!=" relational)*
  * relational = add ("<" add | "<=" add | ">" add | ">=" add)*
@@ -36,8 +38,26 @@ public class Parse {
         this.token = token;
     }
 
-    // expr = mul ("+" mul | "-" mul)*
-    public Node expr() {
+    // program = stmt*
+    public Node program() {
+        Node head = new Node();
+        Node cur = head;
+        while (!atEOF()) {
+            cur.next = stmt();
+            cur = cur.next;
+        }
+        return head.next;
+    }
+
+    // stmt = expr ";"
+    private Node stmt() {
+        Node node = expr();
+        expect(";");
+        return node;
+    }
+
+    // expr = equality
+    private Node expr() {
         return equality();
     }
 

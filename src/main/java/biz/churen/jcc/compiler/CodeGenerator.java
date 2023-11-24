@@ -12,7 +12,6 @@ public class CodeGenerator {
         this.node = node;
     }
 
-    @SuppressWarnings("StringBufferReplaceableByString")
     // Traverse the AST to emit assembly.
     public String toAssembly() {
         StringBuilder sb = new StringBuilder();
@@ -22,11 +21,15 @@ public class CodeGenerator {
         sb.append("main:").append(System.lineSeparator());
 
         // Traverse the AST to emit assembly.
-        sb.append(genAssembly(this.node));
+        Node n = this.node;
+        while (null != n) {
+            sb.append(genAssembly(n));
+            // A result must be at the top of the stack, so pop it
+            // to RAX to make it a program exit code.
+            sb.append("  pop rax").append(System.lineSeparator());
+            n = n.next;
+        }
 
-        // A result must be at the top of the stack, so pop it
-        // to RAX to make it a program exit code.
-        sb.append("  pop rax").append(System.lineSeparator());
         sb.append("  ret").append(System.lineSeparator());
         return sb.toString();
     }

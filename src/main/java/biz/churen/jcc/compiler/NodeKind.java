@@ -16,5 +16,6 @@ public enum NodeKind {
     ND_LE,  // <=
     // ND_GT,  // >
     // ND_GE,  // >=
+    ND_RETURN, // "return"
     ND_NUM, // Integer
 }

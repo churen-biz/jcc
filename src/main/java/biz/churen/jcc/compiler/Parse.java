@@ -8,6 +8,7 @@ import static biz.churen.jcc.compiler.NodeKind.ND_LT;
 import static biz.churen.jcc.compiler.NodeKind.ND_MUL;
 import static biz.churen.jcc.compiler.NodeKind.ND_NE;
 import static biz.churen.jcc.compiler.NodeKind.ND_NUM;
+import static biz.churen.jcc.compiler.NodeKind.ND_RETURN;
 import static biz.churen.jcc.compiler.NodeKind.ND_SUB;
 import static biz.churen.jcc.compiler.TokenKind.TK_EOF;
 import static biz.churen.jcc.compiler.TokenKind.TK_NUM;
@@ -18,7 +19,8 @@ import static biz.churen.jcc.compiler.TokenKind.TK_RESERVED;
  *
  * BNF:
  * program = stmt*
- * stmt = expr ";"
+ * stmt = "return" expr ";"
+ *        | expr ";"
  * expr = equality
  * equality = relational ("==" relational | "!=" relational)*
  * relational = add ("<" add | "<=" add | ">" add | ">=" add)*
@@ -49,8 +51,14 @@ public class Parse {
         return head.next;
     }
 
-    // stmt = expr ";"
+    // stmt = "return" expr ";"
+    //      | expr ";"
     private Node stmt() {
+        if (consume("return")) {
+            Node node = new Node(ND_RETURN, expr(), null);
+            expect(";");
+            return node;
+        }
         Node node = expr();
         expect(";");
         return node;

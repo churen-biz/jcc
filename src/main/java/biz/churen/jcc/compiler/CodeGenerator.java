@@ -1,6 +1,7 @@
 package biz.churen.jcc.compiler;
 
 import static biz.churen.jcc.compiler.NodeKind.ND_NUM;
+import static biz.churen.jcc.compiler.NodeKind.ND_RETURN;
 
 /**
  * @author lihai03
@@ -15,6 +16,7 @@ public class CodeGenerator {
     // Traverse the AST to emit assembly.
     public String toAssembly() {
         StringBuilder sb = new StringBuilder();
+
         // Print out the first half of assembly.
         sb.append(".intel_syntax noprefix").append(System.lineSeparator());
         sb.append(".global main").append(System.lineSeparator());
@@ -23,7 +25,7 @@ public class CodeGenerator {
         // Traverse the AST to emit assembly.
         Node n = this.node;
         while (null != n) {
-            sb.append(genAssembly(n));
+            genAssembly(n, sb);
             // A result must be at the top of the stack, so pop it
             // to RAX to make it a program exit code.
             sb.append("  pop rax").append(System.lineSeparator());
@@ -35,16 +37,21 @@ public class CodeGenerator {
     }
 
     // Parse `token` and returns new Node
-    private String genAssembly(Node node) {
-        StringBuilder sb = new StringBuilder();
-        if (null == node) { return sb.toString(); }
+    private void genAssembly(Node node, StringBuilder sb) {
+        if (null == node) { return; }
 
         if (node.kind == ND_NUM) {
             sb.append("  push ").append(node.val).append(System.lineSeparator());
-            return sb.toString();
+            return;
+        } else if (node.kind == ND_RETURN) {
+            genAssembly(node.left, sb);
+            sb.append("  pop rax").append(System.lineSeparator());
+            sb.append("  ret").append(System.lineSeparator());
+            return;
         }
-        sb.append(genAssembly(node.left));
-        sb.append(genAssembly(node.right));
+
+        genAssembly(node.left, sb);
+        genAssembly(node.right, sb);
 
         sb.append("  pop rdi").append(System.lineSeparator());
         sb.append("  pop rax").append(System.lineSeparator());
@@ -85,6 +92,5 @@ public class CodeGenerator {
                 break;
         }
         sb.append("  push rax").append(System.lineSeparator());
-        return sb.toString();
     }
 }

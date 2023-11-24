@@ -60,7 +60,10 @@ public class Tokenize {
     }
 
     private static int isIdentifier(String s, int start) {
-        if ((s.startsWith("==", start))
+        if ((s.startsWith("return", start))
+        ) {
+            return 6;
+        } else if ((s.startsWith("==", start))
                 || (s.startsWith("!=", start))
                 || (s.startsWith(">=", start))
                 || (s.startsWith("<=", start))

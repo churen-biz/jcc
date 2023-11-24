@@ -3,6 +3,7 @@ package biz.churen.jcc.compiler;
 import static biz.churen.jcc.compiler.NodeKind.ND_ADD;
 import static biz.churen.jcc.compiler.NodeKind.ND_DIV;
 import static biz.churen.jcc.compiler.NodeKind.ND_EQ;
+import static biz.churen.jcc.compiler.NodeKind.ND_EXPR_STMT;
 import static biz.churen.jcc.compiler.NodeKind.ND_LE;
 import static biz.churen.jcc.compiler.NodeKind.ND_LT;
 import static biz.churen.jcc.compiler.NodeKind.ND_MUL;
@@ -59,7 +60,8 @@ public class Parse {
             expect(";");
             return node;
         }
-        Node node = expr();
+
+        Node node = new Node(ND_EXPR_STMT, expr(), null);
         expect(";");
         return node;
     }

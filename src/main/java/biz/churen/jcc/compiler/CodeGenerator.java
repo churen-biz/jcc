@@ -1,8 +1,5 @@
 package biz.churen.jcc.compiler;
 
-import static biz.churen.jcc.compiler.NodeKind.ND_NUM;
-import static biz.churen.jcc.compiler.NodeKind.ND_RETURN;
-
 /**
  * @author lihai03
  * Created on 2023-11-24
@@ -26,9 +23,6 @@ public class CodeGenerator {
         Node n = this.node;
         while (null != n) {
             genAssembly(n, sb);
-            // A result must be at the top of the stack, so pop it
-            // to RAX to make it a program exit code.
-            sb.append("  pop rax").append(System.lineSeparator());
             n = n.next;
         }
 
@@ -40,14 +34,20 @@ public class CodeGenerator {
     private void genAssembly(Node node, StringBuilder sb) {
         if (null == node) { return; }
 
-        if (node.kind == ND_NUM) {
-            sb.append("  push ").append(node.val).append(System.lineSeparator());
-            return;
-        } else if (node.kind == ND_RETURN) {
-            genAssembly(node.left, sb);
-            sb.append("  pop rax").append(System.lineSeparator());
-            sb.append("  ret").append(System.lineSeparator());
-            return;
+        switch (node.kind) {
+            case ND_NUM:
+                sb.append("  push ").append(node.val).append(System.lineSeparator());
+                return;
+            case ND_EXPR_STMT:
+                genAssembly(node.left, sb);
+                sb.append("  add rsp, 8").append(System.lineSeparator());
+                // sb.append("  pop rax").append(System.lineSeparator());
+                return;
+            case ND_RETURN:
+                genAssembly(node.left, sb);
+                sb.append("  pop rax").append(System.lineSeparator());
+                sb.append("  ret").append(System.lineSeparator());
+                return;
         }
 
         genAssembly(node.left, sb);
